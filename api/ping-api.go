@@ -6,14 +6,6 @@ import (
 	"net/http"
 )
 
-// optional code omitted
-
-type Server struct{}
-
-func NewServer() Server {
-	return Server{}
-}
-
 func (Server) GetPing(w http.ResponseWriter, r *http.Request) {
 	resp := api.Pong{
 		Ping: "pong",

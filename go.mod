@@ -2,7 +2,10 @@ module ManagementSystem
 
 go 1.23
 
-require github.com/gorilla/mux v1.8.1
+require (
+	github.com/gorilla/mux v1.8.1
+	github.com/oapi-codegen/runtime v1.1.1
+)
 
 require (
 	github.com/dprotaso/go-yit v0.0.0-20220510233725-9ba8df137936 // indirect

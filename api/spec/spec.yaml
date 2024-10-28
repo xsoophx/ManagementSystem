@@ -7,11 +7,24 @@ paths:
     get:
       responses:
         '200':
-          description: pet response
+          description: pong response
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Pong'
+
+  /users:
+    get:
+      responses:
+        '200':
+          description: Get all users
+          content:
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/User'
+
 components:
   schemas:
     Pong:
@@ -22,3 +35,16 @@ components:
         ping:
           type: string
           example: pong
+
+    User:
+      type: object
+      required:
+          - id
+          - name
+      properties:
+          id:
+            type: integer
+            format: int64
+          name:
+            type: string
+            example: Alice
