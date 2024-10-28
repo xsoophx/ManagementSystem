@@ -1,15 +1,28 @@
 package main
 
 import (
+	"ManagementSystem/api"
+	"ManagementSystem/api/generated"
 	"github.com/gorilla/mux"
+	_ "github.com/gorilla/mux"
+	"log"
 	"net/http"
 )
 
 func main() {
-	r := mux.NewRouter()
-	r.HandleFunc("/", HomeHandler)
+	server := api.NewServer()
 
-	http.ListenAndServe(":8080", r)
+	router := mux.NewRouter()
+	handler := generated.HandlerFromMux(server, router)
+
+	router.HandleFunc("/", HomeHandler)
+
+	s := &http.Server{
+		Handler: handler,
+		Addr:    "0.0.0.0:8080",
+	}
+
+	log.Fatal(s.ListenAndServe())
 }
 
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
