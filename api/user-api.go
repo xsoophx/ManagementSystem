@@ -3,17 +3,18 @@ package api
 import (
 	"ManagementSystem/api/generated"
 	"encoding/json"
+	"github.com/google/uuid"
 	"net/http"
 )
 
 func (Server) GetUsers(w http.ResponseWriter, r *http.Request) {
-	resp := []generated.User{
+	resp := []generated.UserDto{
 		{
-			Id:   1,
+			Id:   uuid.New(),
 			Name: "Arbitrary Name",
 		},
 		{
-			Id:   2,
+			Id:   uuid.New(),
 			Name: "Another Name",
 		},
 	}

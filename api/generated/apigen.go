@@ -8,30 +8,40 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/oapi-codegen/runtime"
 	strictnethttp "github.com/oapi-codegen/runtime/strictmiddleware/nethttp"
+	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
-// Pong defines model for Pong.
-type Pong struct {
-	Ping string `json:"ping"`
+// ArticleDto defines model for Article.
+type ArticleDto struct {
+	CreatedAt   time.Time          `json:"created_at"`
+	Description *string            `json:"description,omitempty"`
+	Id          openapi_types.UUID `json:"id"`
+	Title       string             `json:"title"`
+	UserId      openapi_types.UUID `json:"user_id"`
 }
 
-// User defines model for User.
-type User struct {
-	Id   int64  `json:"id"`
-	Name string `json:"name"`
+// UserDto defines model for User.
+type UserDto struct {
+	Id   openapi_types.UUID `json:"id"`
+	Name string             `json:"name"`
 }
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
 
-	// (GET /ping)
-	GetPing(w http.ResponseWriter, r *http.Request)
+	// (GET /articles)
+	GetArticles(w http.ResponseWriter, r *http.Request)
 
 	// (GET /users)
 	GetUsers(w http.ResponseWriter, r *http.Request)
+
+	// (GET /users/{id})
+	GetUsersId(w http.ResponseWriter, r *http.Request, id openapi_types.UUID)
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -43,11 +53,11 @@ type ServerInterfaceWrapper struct {
 
 type MiddlewareFunc func(http.Handler) http.Handler
 
-// GetPing operation middleware
-func (siw *ServerInterfaceWrapper) GetPing(w http.ResponseWriter, r *http.Request) {
+// GetArticles operation middleware
+func (siw *ServerInterfaceWrapper) GetArticles(w http.ResponseWriter, r *http.Request) {
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetPing(w, r)
+		siw.Handler.GetArticles(w, r)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -62,6 +72,31 @@ func (siw *ServerInterfaceWrapper) GetUsers(w http.ResponseWriter, r *http.Reque
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.GetUsers(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetUsersId operation middleware
+func (siw *ServerInterfaceWrapper) GetUsersId(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", mux.Vars(r)["id"], &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "id", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetUsersId(w, r, id)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -184,23 +219,25 @@ func HandlerWithOptions(si ServerInterface, options GorillaServerOptions) http.H
 		ErrorHandlerFunc:   options.ErrorHandlerFunc,
 	}
 
-	r.HandleFunc(options.BaseURL+"/ping", wrapper.GetPing).Methods("GET")
+	r.HandleFunc(options.BaseURL+"/articles", wrapper.GetArticles).Methods("GET")
 
 	r.HandleFunc(options.BaseURL+"/users", wrapper.GetUsers).Methods("GET")
+
+	r.HandleFunc(options.BaseURL+"/users/{id}", wrapper.GetUsersId).Methods("GET")
 
 	return r
 }
 
-type GetPingRequestObject struct {
+type GetArticlesRequestObject struct {
 }
 
-type GetPingResponseObject interface {
-	VisitGetPingResponse(w http.ResponseWriter) error
+type GetArticlesResponseObject interface {
+	VisitGetArticlesResponse(w http.ResponseWriter) error
 }
 
-type GetPing200JSONResponse Pong
+type GetArticles200JSONResponse []ArticleDto
 
-func (response GetPing200JSONResponse) VisitGetPingResponse(w http.ResponseWriter) error {
+func (response GetArticles200JSONResponse) VisitGetArticlesResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
 
@@ -214,9 +251,26 @@ type GetUsersResponseObject interface {
 	VisitGetUsersResponse(w http.ResponseWriter) error
 }
 
-type GetUsers200JSONResponse []User
+type GetUsers200JSONResponse []UserDto
 
 func (response GetUsers200JSONResponse) VisitGetUsersResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetUsersIdRequestObject struct {
+	Id openapi_types.UUID `json:"id"`
+}
+
+type GetUsersIdResponseObject interface {
+	VisitGetUsersIdResponse(w http.ResponseWriter) error
+}
+
+type GetUsersId200JSONResponse UserDto
+
+func (response GetUsersId200JSONResponse) VisitGetUsersIdResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
 
@@ -226,11 +280,14 @@ func (response GetUsers200JSONResponse) VisitGetUsersResponse(w http.ResponseWri
 // StrictServerInterface represents all server handlers.
 type StrictServerInterface interface {
 
-	// (GET /ping)
-	GetPing(ctx context.Context, request GetPingRequestObject) (GetPingResponseObject, error)
+	// (GET /articles)
+	GetArticles(ctx context.Context, request GetArticlesRequestObject) (GetArticlesResponseObject, error)
 
 	// (GET /users)
 	GetUsers(ctx context.Context, request GetUsersRequestObject) (GetUsersResponseObject, error)
+
+	// (GET /users/{id})
+	GetUsersId(ctx context.Context, request GetUsersIdRequestObject) (GetUsersIdResponseObject, error)
 }
 
 type StrictHandlerFunc = strictnethttp.StrictHTTPHandlerFunc
@@ -262,23 +319,23 @@ type strictHandler struct {
 	options     StrictHTTPServerOptions
 }
 
-// GetPing operation middleware
-func (sh *strictHandler) GetPing(w http.ResponseWriter, r *http.Request) {
-	var request GetPingRequestObject
+// GetArticles operation middleware
+func (sh *strictHandler) GetArticles(w http.ResponseWriter, r *http.Request) {
+	var request GetArticlesRequestObject
 
 	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
-		return sh.ssi.GetPing(ctx, request.(GetPingRequestObject))
+		return sh.ssi.GetArticles(ctx, request.(GetArticlesRequestObject))
 	}
 	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "GetPing")
+		handler = middleware(handler, "GetArticles")
 	}
 
 	response, err := handler(r.Context(), w, r, request)
 
 	if err != nil {
 		sh.options.ResponseErrorHandlerFunc(w, r, err)
-	} else if validResponse, ok := response.(GetPingResponseObject); ok {
-		if err := validResponse.VisitGetPingResponse(w); err != nil {
+	} else if validResponse, ok := response.(GetArticlesResponseObject); ok {
+		if err := validResponse.VisitGetArticlesResponse(w); err != nil {
 			sh.options.ResponseErrorHandlerFunc(w, r, err)
 		}
 	} else if response != nil {
@@ -303,6 +360,32 @@ func (sh *strictHandler) GetUsers(w http.ResponseWriter, r *http.Request) {
 		sh.options.ResponseErrorHandlerFunc(w, r, err)
 	} else if validResponse, ok := response.(GetUsersResponseObject); ok {
 		if err := validResponse.VisitGetUsersResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetUsersId operation middleware
+func (sh *strictHandler) GetUsersId(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
+	var request GetUsersIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.GetUsersId(ctx, request.(GetUsersIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetUsersId")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(GetUsersIdResponseObject); ok {
+		if err := validResponse.VisitGetUsersIdResponse(w); err != nil {
 			sh.options.ResponseErrorHandlerFunc(w, r, err)
 		}
 	} else if response != nil {
