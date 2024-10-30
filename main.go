@@ -13,12 +13,17 @@ func main() {
 	server := api.NewServer()
 
 	router := mux.NewRouter()
-	handler := generated.HandlerFromMux(server, router)
+	apiRouter := router.PathPrefix("/api/v1").Subrouter()
+
+	// TODO: Add auth
+	//apiRouter.Use(middlewares.AuthMiddleware)
+
+	generated.HandlerFromMux(server, apiRouter)
 
 	router.HandleFunc("/", HomeHandler)
 
 	s := &http.Server{
-		Handler: handler,
+		Handler: router,
 		Addr:    "0.0.0.0:8080",
 	}
 

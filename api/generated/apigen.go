@@ -31,17 +31,44 @@ type UserDto struct {
 	Name string             `json:"name"`
 }
 
+// CreateArticleJSONRequestBody defines body for CreateArticle for application/json ContentType.
+type CreateArticleJSONRequestBody = ArticleDto
+
+// UpdateArticleJSONRequestBody defines body for UpdateArticle for application/json ContentType.
+type UpdateArticleJSONRequestBody = ArticleDto
+
+// CreateUserJSONRequestBody defines body for CreateUser for application/json ContentType.
+type CreateUserJSONRequestBody = UserDto
+
+// UpdateUserJSONRequestBody defines body for UpdateUser for application/json ContentType.
+type UpdateUserJSONRequestBody = UserDto
+
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
 
 	// (GET /articles)
 	GetArticles(w http.ResponseWriter, r *http.Request)
 
+	// (POST /articles)
+	CreateArticle(w http.ResponseWriter, r *http.Request)
+
+	// (GET /articles/{id})
+	GetArticlesId(w http.ResponseWriter, r *http.Request, id openapi_types.UUID)
+
+	// (PUT /articles/{id})
+	UpdateArticle(w http.ResponseWriter, r *http.Request, id openapi_types.UUID)
+
 	// (GET /users)
 	GetUsers(w http.ResponseWriter, r *http.Request)
 
+	// (POST /users)
+	CreateUser(w http.ResponseWriter, r *http.Request)
+
 	// (GET /users/{id})
 	GetUsersId(w http.ResponseWriter, r *http.Request, id openapi_types.UUID)
+
+	// (PUT /users/{id})
+	UpdateUser(w http.ResponseWriter, r *http.Request, id openapi_types.UUID)
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -67,11 +94,89 @@ func (siw *ServerInterfaceWrapper) GetArticles(w http.ResponseWriter, r *http.Re
 	handler.ServeHTTP(w, r)
 }
 
+// CreateArticle operation middleware
+func (siw *ServerInterfaceWrapper) CreateArticle(w http.ResponseWriter, r *http.Request) {
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.CreateArticle(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetArticlesId operation middleware
+func (siw *ServerInterfaceWrapper) GetArticlesId(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", mux.Vars(r)["id"], &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "id", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetArticlesId(w, r, id)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// UpdateArticle operation middleware
+func (siw *ServerInterfaceWrapper) UpdateArticle(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", mux.Vars(r)["id"], &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "id", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.UpdateArticle(w, r, id)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 // GetUsers operation middleware
 func (siw *ServerInterfaceWrapper) GetUsers(w http.ResponseWriter, r *http.Request) {
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.GetUsers(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// CreateUser operation middleware
+func (siw *ServerInterfaceWrapper) CreateUser(w http.ResponseWriter, r *http.Request) {
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.CreateUser(w, r)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -97,6 +202,31 @@ func (siw *ServerInterfaceWrapper) GetUsersId(w http.ResponseWriter, r *http.Req
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.GetUsersId(w, r, id)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// UpdateUser operation middleware
+func (siw *ServerInterfaceWrapper) UpdateUser(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", mux.Vars(r)["id"], &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "id", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.UpdateUser(w, r, id)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -221,9 +351,19 @@ func HandlerWithOptions(si ServerInterface, options GorillaServerOptions) http.H
 
 	r.HandleFunc(options.BaseURL+"/articles", wrapper.GetArticles).Methods("GET")
 
+	r.HandleFunc(options.BaseURL+"/articles", wrapper.CreateArticle).Methods("POST")
+
+	r.HandleFunc(options.BaseURL+"/articles/{id}", wrapper.GetArticlesId).Methods("GET")
+
+	r.HandleFunc(options.BaseURL+"/articles/{id}", wrapper.UpdateArticle).Methods("PUT")
+
 	r.HandleFunc(options.BaseURL+"/users", wrapper.GetUsers).Methods("GET")
 
+	r.HandleFunc(options.BaseURL+"/users", wrapper.CreateUser).Methods("POST")
+
 	r.HandleFunc(options.BaseURL+"/users/{id}", wrapper.GetUsersId).Methods("GET")
+
+	r.HandleFunc(options.BaseURL+"/users/{id}", wrapper.UpdateUser).Methods("PUT")
 
 	return r
 }
@@ -238,6 +378,58 @@ type GetArticlesResponseObject interface {
 type GetArticles200JSONResponse []ArticleDto
 
 func (response GetArticles200JSONResponse) VisitGetArticlesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type CreateArticleRequestObject struct {
+	Body *CreateArticleJSONRequestBody
+}
+
+type CreateArticleResponseObject interface {
+	VisitCreateArticleResponse(w http.ResponseWriter) error
+}
+
+type CreateArticle201JSONResponse ArticleDto
+
+func (response CreateArticle201JSONResponse) VisitCreateArticleResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(201)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetArticlesIdRequestObject struct {
+	Id openapi_types.UUID `json:"id"`
+}
+
+type GetArticlesIdResponseObject interface {
+	VisitGetArticlesIdResponse(w http.ResponseWriter) error
+}
+
+type GetArticlesId200JSONResponse ArticleDto
+
+func (response GetArticlesId200JSONResponse) VisitGetArticlesIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type UpdateArticleRequestObject struct {
+	Id   openapi_types.UUID `json:"id"`
+	Body *UpdateArticleJSONRequestBody
+}
+
+type UpdateArticleResponseObject interface {
+	VisitUpdateArticleResponse(w http.ResponseWriter) error
+}
+
+type UpdateArticle200JSONResponse ArticleDto
+
+func (response UpdateArticle200JSONResponse) VisitUpdateArticleResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
 
@@ -260,6 +452,23 @@ func (response GetUsers200JSONResponse) VisitGetUsersResponse(w http.ResponseWri
 	return json.NewEncoder(w).Encode(response)
 }
 
+type CreateUserRequestObject struct {
+	Body *CreateUserJSONRequestBody
+}
+
+type CreateUserResponseObject interface {
+	VisitCreateUserResponse(w http.ResponseWriter) error
+}
+
+type CreateUser201JSONResponse UserDto
+
+func (response CreateUser201JSONResponse) VisitCreateUserResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(201)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type GetUsersIdRequestObject struct {
 	Id openapi_types.UUID `json:"id"`
 }
@@ -277,17 +486,50 @@ func (response GetUsersId200JSONResponse) VisitGetUsersIdResponse(w http.Respons
 	return json.NewEncoder(w).Encode(response)
 }
 
+type UpdateUserRequestObject struct {
+	Id   openapi_types.UUID `json:"id"`
+	Body *UpdateUserJSONRequestBody
+}
+
+type UpdateUserResponseObject interface {
+	VisitUpdateUserResponse(w http.ResponseWriter) error
+}
+
+type UpdateUser200JSONResponse UserDto
+
+func (response UpdateUser200JSONResponse) VisitUpdateUserResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 // StrictServerInterface represents all server handlers.
 type StrictServerInterface interface {
 
 	// (GET /articles)
 	GetArticles(ctx context.Context, request GetArticlesRequestObject) (GetArticlesResponseObject, error)
 
+	// (POST /articles)
+	CreateArticle(ctx context.Context, request CreateArticleRequestObject) (CreateArticleResponseObject, error)
+
+	// (GET /articles/{id})
+	GetArticlesId(ctx context.Context, request GetArticlesIdRequestObject) (GetArticlesIdResponseObject, error)
+
+	// (PUT /articles/{id})
+	UpdateArticle(ctx context.Context, request UpdateArticleRequestObject) (UpdateArticleResponseObject, error)
+
 	// (GET /users)
 	GetUsers(ctx context.Context, request GetUsersRequestObject) (GetUsersResponseObject, error)
 
+	// (POST /users)
+	CreateUser(ctx context.Context, request CreateUserRequestObject) (CreateUserResponseObject, error)
+
 	// (GET /users/{id})
 	GetUsersId(ctx context.Context, request GetUsersIdRequestObject) (GetUsersIdResponseObject, error)
+
+	// (PUT /users/{id})
+	UpdateUser(ctx context.Context, request UpdateUserRequestObject) (UpdateUserResponseObject, error)
 }
 
 type StrictHandlerFunc = strictnethttp.StrictHTTPHandlerFunc
@@ -343,6 +585,96 @@ func (sh *strictHandler) GetArticles(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// CreateArticle operation middleware
+func (sh *strictHandler) CreateArticle(w http.ResponseWriter, r *http.Request) {
+	var request CreateArticleRequestObject
+
+	var body CreateArticleJSONRequestBody
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.CreateArticle(ctx, request.(CreateArticleRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "CreateArticle")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(CreateArticleResponseObject); ok {
+		if err := validResponse.VisitCreateArticleResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetArticlesId operation middleware
+func (sh *strictHandler) GetArticlesId(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
+	var request GetArticlesIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.GetArticlesId(ctx, request.(GetArticlesIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetArticlesId")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(GetArticlesIdResponseObject); ok {
+		if err := validResponse.VisitGetArticlesIdResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// UpdateArticle operation middleware
+func (sh *strictHandler) UpdateArticle(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
+	var request UpdateArticleRequestObject
+
+	request.Id = id
+
+	var body UpdateArticleJSONRequestBody
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.UpdateArticle(ctx, request.(UpdateArticleRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "UpdateArticle")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(UpdateArticleResponseObject); ok {
+		if err := validResponse.VisitUpdateArticleResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
 // GetUsers operation middleware
 func (sh *strictHandler) GetUsers(w http.ResponseWriter, r *http.Request) {
 	var request GetUsersRequestObject
@@ -360,6 +692,37 @@ func (sh *strictHandler) GetUsers(w http.ResponseWriter, r *http.Request) {
 		sh.options.ResponseErrorHandlerFunc(w, r, err)
 	} else if validResponse, ok := response.(GetUsersResponseObject); ok {
 		if err := validResponse.VisitGetUsersResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// CreateUser operation middleware
+func (sh *strictHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
+	var request CreateUserRequestObject
+
+	var body CreateUserJSONRequestBody
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.CreateUser(ctx, request.(CreateUserRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "CreateUser")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(CreateUserResponseObject); ok {
+		if err := validResponse.VisitCreateUserResponse(w); err != nil {
 			sh.options.ResponseErrorHandlerFunc(w, r, err)
 		}
 	} else if response != nil {
@@ -386,6 +749,39 @@ func (sh *strictHandler) GetUsersId(w http.ResponseWriter, r *http.Request, id o
 		sh.options.ResponseErrorHandlerFunc(w, r, err)
 	} else if validResponse, ok := response.(GetUsersIdResponseObject); ok {
 		if err := validResponse.VisitGetUsersIdResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// UpdateUser operation middleware
+func (sh *strictHandler) UpdateUser(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
+	var request UpdateUserRequestObject
+
+	request.Id = id
+
+	var body UpdateUserJSONRequestBody
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.UpdateUser(ctx, request.(UpdateUserRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "UpdateUser")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(UpdateUserResponseObject); ok {
+		if err := validResponse.VisitUpdateUserResponse(w); err != nil {
 			sh.options.ResponseErrorHandlerFunc(w, r, err)
 		}
 	} else if response != nil {

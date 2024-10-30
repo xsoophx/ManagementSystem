@@ -5,6 +5,7 @@ import (
 	"ManagementSystem/util"
 	"encoding/json"
 	"github.com/google/uuid"
+	openapitypes "github.com/oapi-codegen/runtime/types"
 	"net/http"
 	"time"
 )
@@ -26,6 +27,59 @@ func (Server) GetArticles(w http.ResponseWriter, r *http.Request) {
 			Title:       "Article 2",
 			UserId:      user.Id,
 		},
+	}
+
+	w.WriteHeader(http.StatusOK)
+	_ = json.NewEncoder(w).Encode(resp)
+}
+
+func (Server) GetArticlesId(w http.ResponseWriter, r *http.Request, id openapitypes.UUID) {
+	user := generated.UserDto{Id: uuid.New(), Name: "Arbitrary Name"}
+
+	resp := generated.ArticleDto{
+		CreatedAt:   time.Now(),
+		Description: util.ToPtr("Description of Article"),
+		Id:          id,
+		Title:       "Article",
+		UserId:      user.Id,
+	}
+
+	w.WriteHeader(http.StatusOK)
+	_ = json.NewEncoder(w).Encode(resp)
+}
+
+func (Server) CreateArticle(w http.ResponseWriter, r *http.Request) {
+	userId, err := util.GetUserIDFromContext(r.Context())
+	if err != nil {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	var newArticle generated.ArticleDto
+	if err := json.NewDecoder(r.Body).Decode(&newArticle); err != nil {
+		http.Error(w, "Bad Request", http.StatusBadRequest)
+		return
+	}
+
+	newArticle.UserId = userId
+	newArticle.Id = uuid.New()
+	newArticle.CreatedAt = time.Now()
+
+	// TOOO: add repository logic
+
+	w.WriteHeader(http.StatusCreated)
+	_ = json.NewEncoder(w).Encode(newArticle)
+}
+
+func (Server) UpdateArticle(w http.ResponseWriter, r *http.Request, id openapitypes.UUID) {
+	user := generated.UserDto{Id: uuid.New(), Name: "Arbitrary Name"}
+
+	resp := generated.ArticleDto{
+		CreatedAt:   time.Now(),
+		Description: util.ToPtr("Description of Article"),
+		Id:          id,
+		Title:       "Article",
+		UserId:      user.Id,
 	}
 
 	w.WriteHeader(http.StatusOK)

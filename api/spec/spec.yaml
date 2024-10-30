@@ -1,7 +1,7 @@
 openapi: "3.0.0"
 info:
   version: 1.0.0
-  title: Minimal ping API server
+  title: Management System API definition
 
 paths:
   /users:
@@ -15,6 +15,21 @@ paths:
                   type: array
                   items:
                     $ref: '#/components/schemas/User'
+    post:
+      operationId: createUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '201':
+          description: Create a user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
   /users/{id}:
     get:
       parameters:
@@ -32,6 +47,29 @@ paths:
               application/json:
                 schema:
                   $ref: '#/components/schemas/User'
+    put:
+      operationId: updateUser
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: "550e8400-e29b-41d4-a716-446655440000"
+      requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+      responses:
+        '200':
+            description: Update a user by ID
+            content:
+              application/json:
+                schema:
+                    $ref: '#/components/schemas/User'
 
   /articles:
     get:
@@ -44,6 +82,61 @@ paths:
                   type: array
                   items:
                     $ref: '#/components/schemas/Article'
+    post:
+      operationId: createArticle
+      requestBody:
+          required: true
+          content:
+            application/json:
+                schema:
+                  $ref: '#/components/schemas/Article'
+      responses:
+        '201':
+          description: Create an article
+          content:
+              application/json:
+                schema:
+                    $ref: '#/components/schemas/Article'
+  /articles/{id}:
+    get:
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          example: "550e8400-e29b-41d4-a716-446655440000"
+      responses:
+        '200':
+          description: Get an article by ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Article'
+    put:
+      operationId: updateArticle
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          example: "550e8400-e29b-41d4-a716-446655440000"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Article'
+      responses:
+        '200':
+          description: Update an article by ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Article'
 
 components:
   schemas:
