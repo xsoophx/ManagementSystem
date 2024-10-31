@@ -1,7 +1,26 @@
 package api
 
-type Server struct{}
+import (
+	"ManagementSystem/persist"
+	"ManagementSystem/services"
+)
 
-func NewServer() Server {
-	return Server{}
+type Server struct {
+	UserService    *services.UserService
+	ArticleService *services.ArticleService
+}
+
+func NewServer(dbUrl string) *Server {
+	persist.InitDB(dbUrl)
+
+	userDao := persist.NewUserDao()
+	articleDao := persist.NewArticleDAO()
+
+	userService := services.NewUserService(userDao)
+	articleService := services.NewArticleService(articleDao)
+
+	return &Server{
+		UserService:    userService,
+		ArticleService: articleService,
+	}
 }

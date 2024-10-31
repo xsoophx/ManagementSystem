@@ -145,15 +145,27 @@ components:
       x-go-name: UserDto
       required:
           - id
-          - name
+          - first_name
+          - last_name
+          - email
       properties:
           id:
             type: string
             format: uuid
             example: "550e8400-e29b-41d4-a716-446655440000"
-          name:
+          first_name:
             type: string
             example: Alice
+          last_name:
+            type: string
+            example: Doe
+          email:
+            type: string
+            example: alice.example@mail.com
+          created_at:
+             type: string
+             format: date-time
+
 
     Article:
       type: object

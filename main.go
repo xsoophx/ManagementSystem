@@ -10,7 +10,8 @@ import (
 )
 
 func main() {
-	server := api.NewServer()
+	dbUrl := "postgres://user:password@localhost:5432/dbname"
+	server := api.NewServer(dbUrl)
 
 	router := mux.NewRouter()
 	apiRouter := router.PathPrefix("/api/v1").Subrouter()
@@ -20,7 +21,7 @@ func main() {
 
 	generated.HandlerFromMux(server, apiRouter)
 
-	router.HandleFunc("/", HomeHandler)
+	router.HandleFunc("/", homeHandler)
 
 	s := &http.Server{
 		Handler: router,
@@ -30,7 +31,7 @@ func main() {
 	log.Fatal(s.ListenAndServe())
 }
 
-func HomeHandler(w http.ResponseWriter, r *http.Request) {
+func homeHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Hello World"))
 }

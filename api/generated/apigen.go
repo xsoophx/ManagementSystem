@@ -27,8 +27,11 @@ type ArticleDto struct {
 
 // UserDto defines model for User.
 type UserDto struct {
-	Id   openapi_types.UUID `json:"id"`
-	Name string             `json:"name"`
+	CreatedAt *time.Time         `json:"created_at,omitempty"`
+	Email     string             `json:"email"`
+	FirstName string             `json:"first_name"`
+	Id        openapi_types.UUID `json:"id"`
+	LastName  string             `json:"last_name"`
 }
 
 // CreateArticleJSONRequestBody defines body for CreateArticle for application/json ContentType.

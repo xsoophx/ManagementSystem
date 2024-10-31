@@ -10,8 +10,8 @@ import (
 	"time"
 )
 
-func (Server) GetArticles(w http.ResponseWriter, r *http.Request) {
-	user := generated.UserDto{Id: uuid.New(), Name: "Arbitrary Name"}
+func (s *Server) GetArticles(w http.ResponseWriter, r *http.Request) {
+	user := generated.UserDto{Id: uuid.New(), FirstName: "Arbitrary Name", LastName: "Arbitrary Last Name"}
 
 	resp := []generated.ArticleDto{
 		{
@@ -33,8 +33,8 @@ func (Server) GetArticles(w http.ResponseWriter, r *http.Request) {
 	_ = json.NewEncoder(w).Encode(resp)
 }
 
-func (Server) GetArticlesId(w http.ResponseWriter, r *http.Request, id openapitypes.UUID) {
-	user := generated.UserDto{Id: uuid.New(), Name: "Arbitrary Name"}
+func (s *Server) GetArticlesId(w http.ResponseWriter, r *http.Request, id openapitypes.UUID) {
+	user := generated.UserDto{Id: uuid.New(), FirstName: "Arbitrary Name", LastName: "Arbitrary Last Name"}
 
 	resp := generated.ArticleDto{
 		CreatedAt:   time.Now(),
@@ -48,7 +48,7 @@ func (Server) GetArticlesId(w http.ResponseWriter, r *http.Request, id openapity
 	_ = json.NewEncoder(w).Encode(resp)
 }
 
-func (Server) CreateArticle(w http.ResponseWriter, r *http.Request) {
+func (s *Server) CreateArticle(w http.ResponseWriter, r *http.Request) {
 	userId, err := util.GetUserIDFromContext(r.Context())
 	if err != nil {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
@@ -71,8 +71,8 @@ func (Server) CreateArticle(w http.ResponseWriter, r *http.Request) {
 	_ = json.NewEncoder(w).Encode(newArticle)
 }
 
-func (Server) UpdateArticle(w http.ResponseWriter, r *http.Request, id openapitypes.UUID) {
-	user := generated.UserDto{Id: uuid.New(), Name: "Arbitrary Name"}
+func (s *Server) UpdateArticle(w http.ResponseWriter, r *http.Request, id openapitypes.UUID) {
+	user := generated.UserDto{Id: uuid.New(), FirstName: "Arbitrary Name", LastName: "Arbitrary Last Name"}
 
 	resp := generated.ArticleDto{
 		CreatedAt:   time.Now(),

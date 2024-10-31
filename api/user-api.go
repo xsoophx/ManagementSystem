@@ -8,15 +8,17 @@ import (
 	"net/http"
 )
 
-func (Server) GetUsers(w http.ResponseWriter, r *http.Request) {
+func (s *Server) GetUsers(w http.ResponseWriter, r *http.Request) {
 	resp := []generated.UserDto{
 		{
-			Id:   uuid.New(),
-			Name: "Arbitrary Name",
+			Id:        uuid.New(),
+			FirstName: "Arbitrary First Name",
+			LastName:  "Arbitrary Last Name",
 		},
 		{
-			Id:   uuid.New(),
-			Name: "Another Name",
+			Id:        uuid.New(),
+			FirstName: "Another First Name",
+			LastName:  "Another Last Name",
 		},
 	}
 
@@ -24,30 +26,32 @@ func (Server) GetUsers(w http.ResponseWriter, r *http.Request) {
 	_ = json.NewEncoder(w).Encode(resp)
 }
 
-func (Server) GetUsersId(w http.ResponseWriter, r *http.Request, id openapitypes.UUID) {
-	resp := generated.UserDto{
-		Id:   uuid.New(),
-		Name: "Arbitrary Name",
+func (s *Server) GetUsersId(w http.ResponseWriter, r *http.Request, id openapitypes.UUID) {
+	user, err := s.UserService.GetUser(id)
+	if err != nil {
+		return
 	}
 
 	w.WriteHeader(http.StatusOK)
-	_ = json.NewEncoder(w).Encode(resp)
+	_ = json.NewEncoder(w).Encode(user)
 }
 
-func (Server) CreateUser(w http.ResponseWriter, r *http.Request) {
+func (s *Server) CreateUser(w http.ResponseWriter, r *http.Request) {
 	resp := generated.UserDto{
-		Id:   uuid.New(),
-		Name: "Arbitrary Name",
+		Id:        uuid.New(),
+		FirstName: "Arbitrary First Name",
+		LastName:  "Arbitrary Last Name",
 	}
 
 	w.WriteHeader(http.StatusCreated)
 	_ = json.NewEncoder(w).Encode(resp)
 }
 
-func (Server) UpdateUser(w http.ResponseWriter, r *http.Request, id openapitypes.UUID) {
+func (s *Server) UpdateUser(w http.ResponseWriter, r *http.Request, id openapitypes.UUID) {
 	resp := generated.UserDto{
-		Id:   uuid.New(),
-		Name: "Arbitrary Name",
+		Id:        uuid.New(),
+		FirstName: "Arbitrary First Name",
+		LastName:  "Arbitrary Last Name",
 	}
 
 	w.WriteHeader(http.StatusOK)
