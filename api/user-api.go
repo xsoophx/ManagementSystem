@@ -2,6 +2,7 @@ package api
 
 import (
 	"ManagementSystem/api/generated"
+	"ManagementSystem/services/models"
 	"encoding/json"
 	"github.com/google/uuid"
 	openapitypes "github.com/oapi-codegen/runtime/types"
@@ -37,14 +38,21 @@ func (s *Server) GetUsersId(w http.ResponseWriter, r *http.Request, id openapity
 }
 
 func (s *Server) CreateUser(w http.ResponseWriter, r *http.Request) {
-	resp := generated.UserDto{
-		Id:        uuid.New(),
-		FirstName: "Arbitrary First Name",
-		LastName:  "Arbitrary Last Name",
+	var userDto generated.UserDto
+	if err := json.NewDecoder(r.Body).Decode(&userDto); err != nil {
+		http.Error(w, "Invalid request payload", http.StatusBadRequest)
+		return
+	}
+
+	user, err := s.UserService.RegisterUser(userDto.FirstName, userDto.LastName, userDto.Email)
+
+	if err != nil {
+		http.Error(w, "Could not register user", http.StatusInternalServerError)
+		return
 	}
 
 	w.WriteHeader(http.StatusCreated)
-	_ = json.NewEncoder(w).Encode(resp)
+	_ = json.NewEncoder(w).Encode(userToUserDto(user))
 }
 
 func (s *Server) UpdateUser(w http.ResponseWriter, r *http.Request, id openapitypes.UUID) {
@@ -56,4 +64,14 @@ func (s *Server) UpdateUser(w http.ResponseWriter, r *http.Request, id openapity
 
 	w.WriteHeader(http.StatusOK)
 	_ = json.NewEncoder(w).Encode(resp)
+}
+
+func userToUserDto(user *models.User) *generated.UserDto {
+	return &generated.UserDto{
+		Id:        user.ID,
+		FirstName: user.FirstName,
+		LastName:  user.LastName,
+		Email:     user.Email,
+		CreatedAt: user.CreatedAt,
+	}
 }

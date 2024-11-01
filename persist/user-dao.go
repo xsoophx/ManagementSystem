@@ -2,6 +2,7 @@ package persist
 
 import (
 	"ManagementSystem/persist/models"
+	sm "ManagementSystem/services/models"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -14,30 +15,56 @@ func NewUserDao() *UserDao {
 	return &UserDao{db: GetDB()}
 }
 
-func (dao *UserDao) CreateUser(user *models.UserDbo) error {
-	return dao.db.Create(user).Error
+func (dao *UserDao) CreateUser(user *sm.User) error {
+	return dao.db.Create(dao.toUserDbo(user)).Error
 }
 
-func (dao *UserDao) GetUser(id uuid.UUID) (*models.UserDbo, error) {
+func (dao *UserDao) GetUser(id uuid.UUID) (*sm.User, error) {
 	var user models.UserDbo
 	if err := dao.db.First(&user, id).Error; err != nil {
 		return nil, err
 	}
-	return &user, nil
+
+	return dao.toUser(&user), nil
 }
 
-func (dao *UserDao) GetAllUsers() ([]models.UserDbo, error) {
+func (dao *UserDao) GetAllUsers() ([]sm.User, error) {
 	var users []models.UserDbo
 	if err := dao.db.Find(&users).Error; err != nil {
 		return nil, err
 	}
-	return users, nil
+
+	var smUsers []sm.User
+	for _, user := range users {
+		smUsers = append(smUsers, *dao.toUser(&user))
+	}
+	return smUsers, nil
 }
 
-func (dao *UserDao) UpdateUser(user *models.UserDbo) error {
-	return dao.db.Save(user).Error
+func (dao *UserDao) UpdateUser(user *sm.User) error {
+	return dao.db.Save(dao.toUserDbo(user)).Error
 }
 
 func (dao *UserDao) DeleteUser(id uuid.UUID) error {
 	return dao.db.Delete(&models.UserDbo{}, id).Error
+}
+
+func (dao *UserDao) toUserDbo(user *sm.User) *models.UserDbo {
+	return &models.UserDbo{
+		ID:        user.ID,
+		FirstName: user.FirstName,
+		LastName:  user.LastName,
+		Email:     user.Email,
+		CreatedAt: user.CreatedAt,
+	}
+}
+
+func (dao *UserDao) toUser(user *models.UserDbo) *sm.User {
+	return &sm.User{
+		ID:        user.ID,
+		FirstName: user.FirstName,
+		LastName:  user.LastName,
+		Email:     user.Email,
+		CreatedAt: user.CreatedAt,
+	}
 }

@@ -30,7 +30,7 @@ func main() {
 
 	s := &http.Server{
 		Handler: router,
-		Addr:    "0.0.0.0:8080",
+		Addr:    "0.0.0.0:8123",
 	}
 
 	log.Fatal(s.ListenAndServe())

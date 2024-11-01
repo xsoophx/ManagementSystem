@@ -6,3 +6,6 @@ ManagementSystem.exe
 
 # env
 .env
+
+# theming
+.idea/material_theme_project_new.xml
