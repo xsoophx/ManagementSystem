@@ -7,10 +7,15 @@ import (
 	_ "github.com/gorilla/mux"
 	"log"
 	"net/http"
+	"os"
 )
 
 func main() {
-	dbUrl := "postgres://user:password@localhost:5432/dbname"
+	dbUser := os.Getenv("DB_USERNAME")
+	dbPassword := os.Getenv("DB_PASSWORD")
+	dbName := os.Getenv("DB_NAME")
+
+	dbUrl := "postgres://" + dbUser + ":" + dbPassword + "@localhost:5432/" + dbName
 	server := api.NewServer(dbUrl)
 
 	router := mux.NewRouter()

@@ -3,3 +3,6 @@
 
 # Windows
 ManagementSystem.exe
+
+# env
+.env
