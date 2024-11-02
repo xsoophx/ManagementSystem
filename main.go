@@ -3,6 +3,7 @@ package main
 import (
 	"ManagementSystem/api"
 	"ManagementSystem/api/generated"
+	"fmt"
 	"github.com/gorilla/mux"
 	_ "github.com/gorilla/mux"
 	"log"
@@ -11,11 +12,19 @@ import (
 )
 
 func main() {
-	dbUser := os.Getenv("DB_USERNAME")
-	dbPassword := os.Getenv("DB_PASSWORD")
-	dbName := os.Getenv("DB_NAME")
+	dbUser := os.Getenv("POSTGRES_USER")
+	dbPassword := os.Getenv("POSTGRES_PASSWORD")
+	dbName := os.Getenv("POSTGRES_DB")
+	dbPort := os.Getenv("POSTGRES_PORT_HOST")
+	dbHost := os.Getenv("DB_HOST_HOST")
 
-	dbUrl := "postgres://" + dbUser + ":" + dbPassword + "@localhost:5432/" + dbName
+	if os.Getenv("DOCKER_ENV") == "true" {
+		dbPort = os.Getenv("POSTGRES_PORT_CONTAINER")
+		fmt.Println("DB_HOST_CONTAINER:", os.Getenv("DB_HOST_CONTAINER"))
+		dbHost = os.Getenv("DB_HOST_CONTAINER")
+	}
+
+	dbUrl := fmt.Sprintf("postgres://%s:%s@%s:%s/%s", dbUser, dbPassword, dbHost, dbPort, dbName)
 	server := api.NewServer(dbUrl)
 
 	router := mux.NewRouter()
