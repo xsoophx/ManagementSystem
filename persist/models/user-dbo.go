@@ -2,13 +2,15 @@ package models
 
 import (
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 	"time"
 )
 
-const tableName = "users"
+const userTableName = "users"
 
 type UserDbo struct {
-	ID        uuid.UUID  `gorm:"type:uuid;primaryKey;default:uuid_generate_v4()" json:"id"`
+	gorm.Model
+	ID        uuid.UUID  `gorm:"type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
 	FirstName string     `gorm:"type:varchar(100);not null" json:"first_name"`
 	LastName  string     `gorm:"type:varchar(100);not null" json:"last_name"`
 	Email     string     `gorm:"type:varchar(100);unique;not null" json:"email"`
@@ -16,5 +18,5 @@ type UserDbo struct {
 }
 
 func (UserDbo) TableName() string {
-	return tableName
+	return userTableName
 }
