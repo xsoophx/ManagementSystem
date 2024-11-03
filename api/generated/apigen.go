@@ -18,7 +18,7 @@ import (
 
 // ArticleDto defines model for Article.
 type ArticleDto struct {
-	CreatedAt   time.Time          `json:"created_at"`
+	CreatedAt   *time.Time         `json:"created_at,omitempty"`
 	Description *string            `json:"description,omitempty"`
 	Id          openapi_types.UUID `json:"id"`
 	Title       string             `json:"title"`

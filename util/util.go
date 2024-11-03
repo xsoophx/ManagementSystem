@@ -22,7 +22,7 @@ func SetUserIDInContext(ctx context.Context, userID string) context.Context {
 func GetUserIDFromContext(ctx context.Context) (types.UUID, error) {
 	userID, ok := ctx.Value(userIDKey).(types.UUID)
 	if !ok {
-		return uuid.New(), errors.New("user ID not found in context")
+		return uuid.New(), errors.New("user Id not found in context")
 	}
 	return userID, nil
 }

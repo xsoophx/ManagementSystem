@@ -29,16 +29,16 @@ func (dao *UserDao) GetUser(id uuid.UUID) (*sm.User, error) {
 }
 
 func (dao *UserDao) GetAllUsers() ([]sm.User, error) {
-	var users []models.UserDbo
-	if err := dao.db.Find(&users).Error; err != nil {
+	var userDbos []models.UserDbo
+	if err := dao.db.Find(&userDbos).Error; err != nil {
 		return nil, err
 	}
 
-	var smUsers []sm.User
-	for _, user := range users {
-		smUsers = append(smUsers, *dao.toUser(&user))
+	var users []sm.User
+	for _, userDbo := range userDbos {
+		users = append(users, *dao.toUser(&userDbo))
 	}
-	return smUsers, nil
+	return users, nil
 }
 
 func (dao *UserDao) UpdateUser(user *sm.User) error {
