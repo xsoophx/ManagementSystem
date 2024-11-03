@@ -42,14 +42,22 @@ func (s *UserService) DeleteUser(id uuid.UUID) error {
 	return nil
 }
 
-func (s *UserService) UpdateUser(id uuid.UUID, firstname, lastname, email string) (*models.User, error) {
+func (s *UserService) UpdateUser(id uuid.UUID, firstname, lastname, email *string) (*models.User, error) {
 	user, err := s.dao.GetUser(id)
 	if err != nil {
 		return nil, fmt.Errorf("could not retrieve user with id %s: %w", id, err)
 	}
-	user.FirstName = firstname
-	user.LastName = lastname
-	user.Email = email
+
+	if firstname != nil {
+		user.FirstName = *firstname
+	}
+	if lastname != nil {
+		user.LastName = *lastname
+	}
+	if email != nil {
+		user.Email = *email
+	}
+
 	if err := s.dao.UpdateUser(user); err != nil {
 		return nil, fmt.Errorf("could not update user with id %s: %w", id, err)
 	}

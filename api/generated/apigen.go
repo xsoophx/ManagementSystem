@@ -25,13 +25,22 @@ type ArticleDto struct {
 	UserId      openapi_types.UUID `json:"user_id"`
 }
 
-// UserDto defines model for User.
-type UserDto struct {
-	CreatedAt *time.Time         `json:"created_at,omitempty"`
+// CreateUserDto defines model for CreateUser.
+type CreateUserDto struct {
+	CreatedAt time.Time          `json:"created_at"`
 	Email     string             `json:"email"`
 	FirstName string             `json:"first_name"`
 	Id        openapi_types.UUID `json:"id"`
 	LastName  string             `json:"last_name"`
+}
+
+// UserDto defines model for User.
+type UserDto struct {
+	CreatedAt time.Time          `json:"created_at"`
+	Email     *string            `json:"email,omitempty"`
+	FirstName *string            `json:"first_name,omitempty"`
+	Id        openapi_types.UUID `json:"id"`
+	LastName  *string            `json:"last_name,omitempty"`
 }
 
 // CreateArticleJSONRequestBody defines body for CreateArticle for application/json ContentType.
@@ -41,7 +50,7 @@ type CreateArticleJSONRequestBody = ArticleDto
 type UpdateArticleJSONRequestBody = ArticleDto
 
 // CreateUserJSONRequestBody defines body for CreateUser for application/json ContentType.
-type CreateUserJSONRequestBody = UserDto
+type CreateUserJSONRequestBody = CreateUserDto
 
 // UpdateUserJSONRequestBody defines body for UpdateUser for application/json ContentType.
 type UpdateUserJSONRequestBody = UserDto
@@ -463,7 +472,7 @@ type CreateUserResponseObject interface {
 	VisitCreateUserResponse(w http.ResponseWriter) error
 }
 
-type CreateUser201JSONResponse UserDto
+type CreateUser201JSONResponse CreateUserDto
 
 func (response CreateUser201JSONResponse) VisitCreateUserResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")

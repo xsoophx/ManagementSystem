@@ -3,14 +3,16 @@ package api
 import (
 	"ManagementSystem/persist"
 	"ManagementSystem/services"
+	"context"
 )
 
 type Server struct {
 	UserService    *services.UserService
 	ArticleService *services.ArticleService
+	ctx            context.Context
 }
 
-func NewServer(dbUrl string) *Server {
+func NewServer(dbUrl string, ctx context.Context) *Server {
 	persist.InitDB(dbUrl)
 
 	userDao := persist.NewUserDao()
@@ -22,5 +24,6 @@ func NewServer(dbUrl string) *Server {
 	return &Server{
 		UserService:    userService,
 		ArticleService: articleService,
+		ctx:            ctx,
 	}
 }

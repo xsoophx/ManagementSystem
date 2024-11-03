@@ -22,14 +22,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/User'
+              $ref: '#/components/schemas/CreateUser'
       responses:
         '201':
           description: Create a user
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                $ref: '#/components/schemas/CreateUser'
   /users/{id}:
     get:
       parameters:
@@ -145,9 +145,7 @@ components:
       x-go-name: UserDto
       required:
           - id
-          - first_name
-          - last_name
-          - email
+          - created_at
       properties:
           id:
             type: string
@@ -165,6 +163,32 @@ components:
           created_at:
              type: string
              format: date-time
+    CreateUser:
+      type: object
+      x-go-name: CreateUserDto
+      required:
+        - id
+        - first_name
+        - last_name
+        - email
+        - created_at
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        first_name:
+          type: string
+          example: Alice
+        last_name:
+          type: string
+          example: Doe
+        email:
+          type: string
+          example: alice.example@mail.com
+        created_at:
+          type: string
+          format: date-time
 
 
     Article:

@@ -19,7 +19,7 @@ func main() {
 	ctx := context.WithValue(context.Background(), "logger", logger)
 
 	dbUrl := createDbUrl(ctx)
-	server := api.NewServer(dbUrl)
+	server := api.NewServer(dbUrl, ctx)
 
 	router := mux.NewRouter()
 	apiRouter := router.PathPrefix("/api/v1").Subrouter()
