@@ -11,7 +11,7 @@ import (
 )
 
 func (s *Server) GetArticles(w http.ResponseWriter, r *http.Request) {
-	user := generated.UserDto{Id: uuid.New(), FirstName: "Arbitrary Name", LastName: "Arbitrary Last Name"}
+	user := generated.UserDto{Id: uuid.New(), FirstName: util.ToPtr("Arbitrary Name"), LastName: util.ToPtr("Arbitrary Last Name")}
 
 	resp := []generated.ArticleDto{
 		{
@@ -34,7 +34,7 @@ func (s *Server) GetArticles(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) GetArticlesId(w http.ResponseWriter, r *http.Request, id openapitypes.UUID) {
-	user := generated.UserDto{Id: uuid.New(), FirstName: "Arbitrary Name", LastName: "Arbitrary Last Name"}
+	user := generated.UserDto{Id: uuid.New(), FirstName: util.ToPtr("Arbitrary Name"), LastName: util.ToPtr("Arbitrary Last Name")}
 
 	resp := generated.ArticleDto{
 		CreatedAt:   time.Now(),
@@ -72,7 +72,7 @@ func (s *Server) CreateArticle(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) UpdateArticle(w http.ResponseWriter, r *http.Request, id openapitypes.UUID) {
-	user := generated.UserDto{Id: uuid.New(), FirstName: "Arbitrary Name", LastName: "Arbitrary Last Name"}
+	user := generated.UserDto{Id: uuid.New(), FirstName: util.ToPtr("Arbitrary Name"), LastName: util.ToPtr("Arbitrary Last Name")}
 
 	resp := generated.ArticleDto{
 		CreatedAt:   time.Now(),
