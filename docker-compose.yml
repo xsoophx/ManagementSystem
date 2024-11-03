@@ -5,19 +5,22 @@ services:
     build:
       context: .
     environment:
-      - DB_HOST_CONTAINER=postgres
+      - DB_HOST_CONTAINER=${DB_HOST_CONTAINER}
       - DOCKER_ENV=true
       - POSTGRES_PORT=${POSTGRES_PORT_CONTAINER}
+      - POSTGRES_PORT_HOST=${POSTGRES_PORT_HOST}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=${POSTGRES_DB}
     ports:
       - "8123:8123"
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
+    restart: on-failure
 
   postgres:
-    image: postgres:15
+    image: postgres:17
     container_name: management-system-postgres
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
@@ -28,6 +31,11 @@ services:
       - postgres_data:/var/lib/postgresql/data
     ports:
       - "${POSTGRES_PORT_HOST}:${POSTGRES_PORT_CONTAINER}"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
   postgres_data:
